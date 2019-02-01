@@ -9,6 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/stake"
+	"github.com/cosmos/cosmos-sdk/x/params"
+
 	nameservice "github.com/kidinamoto01/nameservice/x/nservice"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -34,11 +36,16 @@ type nameServiceApp struct {
 	keyNSowners      *sdk.KVStoreKey
 	keyNSprices      *sdk.KVStoreKey
 	keyFeeCollection *sdk.KVStoreKey
+	keyParams        *sdk.KVStoreKey
+	tkeyParams       *sdk.TransientStoreKey
 
 	accountKeeper       auth.AccountKeeper
 	bankKeeper          bank.Keeper
 	feeCollectionKeeper auth.FeeCollectionKeeper
 	nsKeeper            nameservice.Keeper
+
+	paramsKeeper        params.Keeper
+
 }
 
 func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
@@ -61,6 +68,9 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 		keyNSprices:      sdk.NewKVStoreKey("ns_prices"),
 		keyFeeCollection: sdk.NewKVStoreKey("fee_collection"),
 	}
+
+	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams)
+
 	// The AccountKeeper handles address -> account lookups
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,

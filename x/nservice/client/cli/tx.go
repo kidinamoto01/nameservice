@@ -21,7 +21,7 @@ func GetCmdBuyName(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithAccountDecoder(cdc)
 
-			txBldr := authtxb.NewTxBuilderFromCLI().WithCodec(cdc)
+			txBldr := authtxb.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			if err := cliCtx.EnsureAccountExists(); err != nil {
 				return err
@@ -59,7 +59,7 @@ func GetCmdSetName(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithAccountDecoder(cdc)
 
-			txBldr := authtxb.NewTxBuilderFromCLI().WithCodec(cdc)
+			txBldr := authtxb.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			if err := cliCtx.EnsureAccountExists(); err != nil {
 				return err

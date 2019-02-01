@@ -102,9 +102,8 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			pk := gaiaInit.ReadOrCreatePrivValidator(config.PrivValidatorFile())
-			_, _, validator, err := server.SimpleAppGenTx(cdc, pk)
+			_, valPubKeys, err := gaiaInit.InitializeNodeValidatorFiles(config)
+			_, _, validator, err := server.SimpleAppGenTx(cdc, valPubKeys)
 			if err != nil {
 				return err
 			}
