@@ -1,4 +1,4 @@
-package nameservice
+package nservice
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -67,7 +67,7 @@ func (k Keeper) SetPrice(ctx sdk.Context, name string, price sdk.Coins) {
 	store.Set([]byte(name), k.cdc.MustMarshalBinaryBare(price))
 }
 
-// NewKeeper creates new instances of the nameservice Keeper
+// NewKeeper creates new instances of the nservice Keeper
 func NewKeeper(coinKeeper bank.Keeper, namesStoreKey sdk.StoreKey, ownersStoreKey sdk.StoreKey, priceStoreKey sdk.StoreKey, cdc *codec.Codec) Keeper {
 	return Keeper{
 		coinKeeper:     coinKeeper,
