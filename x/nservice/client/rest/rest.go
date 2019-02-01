@@ -118,7 +118,7 @@ func setNameHandler(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFun
 		}
 
 		baseReq := req.BaseReq.Sanitize()
-		if !baseReq.ValidateBasic(w,cliCtx) {
+		if !baseReq.ValidateBasic(w,cliCtx){
 			return
 		}
 

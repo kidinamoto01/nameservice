@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
+	"github.com/kidinamoto01/nameservice/version"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -49,7 +49,7 @@ func main() {
 
 	rootCmd.AddCommand(InitCmd(ctx, cdc))
 	rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc))
-
+	rootCmd.AddCommand(	version.VersionCmd,)
 	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
 
 	// prepare and add flags

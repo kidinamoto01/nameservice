@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/kidinamoto01/nameservice/version"
 	"github.com/spf13/cobra"
 	amino "github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
@@ -117,6 +117,7 @@ func txCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 		authcmd.GetSignCommand(cdc),
 		bankcmd.GetBroadcastCommand(cdc),
 		client.LineBreak,
+		version.VersionCmd,
 	)
 
 	for _, m := range mc {
