@@ -8,10 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
 	"github.com/cosmos/cosmos-sdk/x/params"
-
+	"github.com/cosmos/cosmos-sdk/x/staking"
 	nameservice "github.com/kidinamoto01/nameservice/x/nservice"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -21,7 +19,6 @@ import (
 	dbm "github.com/tendermint/tendermint/libs/db"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
-
 
 const (
 	appName = "nameservice"
@@ -43,12 +40,11 @@ type nameServiceApp struct {
 	accountKeeper       auth.AccountKeeper
 	bankKeeper          bank.Keeper
 	feeCollectionKeeper auth.FeeCollectionKeeper
+	paramsKeeper        params.Keeper
 	nsKeeper            nameservice.Keeper
-
-	paramsKeeper     params.Keeper
-
 }
 
+// NewNameServiceApp is a constructor function for nameServiceApp
 func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 
 	// First define the top level codec that will be shared by the different modules
@@ -72,6 +68,7 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 		tkeyParams:       sdk.NewTransientStoreKey("transient_params"),
 	}
 
+	// The ParamsKeeper handles parameter storage for the application
 	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams)
 
 	// The AccountKeeper handles address -> account lookups
@@ -88,6 +85,7 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 		app.paramsKeeper.Subspace(bank.DefaultParamspace),
 		bank.DefaultCodespace,
 	)
+
 	// The FeeCollectionKeeper collects transaction fees and renders them to the fee distribution module
 	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(cdc, app.keyFeeCollection)
 
@@ -123,6 +121,9 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 		app.keyNSnames,
 		app.keyNSowners,
 		app.keyNSprices,
+		app.keyFeeCollection,
+		app.keyParams,
+		app.tkeyParams,
 	)
 
 	err := app.LoadLatestVersion(app.keyMain)
@@ -132,7 +133,6 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 
 	return app
 }
-
 
 // GenesisState represents chain state at the start of the chain. Any initial state (account balances) are stored here.
 type GenesisState struct {
@@ -178,7 +178,12 @@ func (app *nameServiceApp) ExportAppStateAndValidators() (appState json.RawMessa
 
 	app.accountKeeper.IterateAccounts(ctx, appendAccountsFn)
 
-	genState := GenesisState{Accounts: accounts}
+	genState := GenesisState{
+		Accounts: accounts,
+		AuthData: auth.DefaultGenesisState(),
+		BankData: bank.DefaultGenesisState(),
+	}
+
 	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
 	if err != nil {
 		return nil, nil, err
@@ -198,5 +203,3 @@ func MakeCodec() *codec.Codec {
 	codec.RegisterCrypto(cdc)
 	return cdc
 }
-
-
