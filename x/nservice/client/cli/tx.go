@@ -4,8 +4,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
+
 	"github.com/cosmos/cosmos-sdk/client/utils"
-	"github.com/cosmos/cosmos-sdk/codec"
+
+"github.com/cosmos/cosmos-sdk/codec"
 	nameservice "github.com/kidinamoto01/nameservice/x/nservice"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,10 +34,7 @@ func GetCmdBuyName(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			account, err := cliCtx.GetFromAddress()
-			if err != nil {
-				return err
-			}
+			account:= cliCtx.GetFromAddress()
 
 			msg := nameservice.NewMsgBuyName(args[0], coins, account)
 			err = msg.ValidateBasic()
@@ -45,7 +44,7 @@ func GetCmdBuyName(cdc *codec.Codec) *cobra.Command {
 
 			cliCtx.PrintResponse = true
 
-			return utils.CompleteAndBroadcastTxCli(txBldr, cliCtx, []sdk.Msg{msg})
+			return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdk.Msg{msg})
 		},
 	}
 }
@@ -65,20 +64,17 @@ func GetCmdSetName(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			account, err := cliCtx.GetFromAddress()
-			if err != nil {
-				return err
-			}
+			account:= cliCtx.GetFromAddress()
 
 			msg := nameservice.NewMsgSetName(args[0], args[1], account)
-			err = msg.ValidateBasic()
+			err := msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
 			cliCtx.PrintResponse = true
 
-			return utils.CompleteAndBroadcastTxCli(txBldr, cliCtx, []sdk.Msg{msg})
+			return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdk.Msg{msg})
 		},
 	}
 }

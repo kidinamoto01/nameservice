@@ -6,6 +6,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
+	"strings"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 )
 
 // GetCmdResolveName queries information about a name
@@ -24,11 +27,17 @@ func GetCmdResolveName(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			fmt.Println(string(res))
-
-			return nil
+			return cliCtx.PrintOutput(resolveRes{string(res)})
 		},
 	}
+}
+
+type resolveRes struct {
+	Value string `json:"value"`
+}
+
+func (r resolveRes) String() string {
+	return r.Value
 }
 
 // GetCmdWhois queries information about a domain
@@ -49,7 +58,24 @@ func GetCmdWhois(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			fmt.Println(string(res))
 
-			return nil
+			var out whoIsRes
+
+			cdc.MustUnmarshalJSON(res, &out)
+
+			return cliCtx.PrintOutput(out)
+
 		},
 	}
+}
+
+type whoIsRes struct {
+	Value string         `json:"value"`
+	Owner sdk.AccAddress `json:"owner"`
+	Price sdk.Coins      `json:"price"`
+}
+
+func (w whoIsRes) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`Owner: %s
+ Value: %s
+ Price: %s`, w.Owner, w.Value, w.Price))
 }

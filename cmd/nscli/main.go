@@ -55,7 +55,7 @@ func main() {
 	rootCmd.AddCommand(
 		//rpc..InitClientCommand(),
 		rpc.StatusCommand(),
-		client.ConfigCmd(),
+		client.ConfigCmd(defaultCLIHome),
 		queryCmd(cdc, mc),
 		txCmd(cdc, mc),
 		client.LineBreak,
@@ -90,7 +90,7 @@ func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 	}
 
 	queryCmd.AddCommand(
-		rpc.ValidatorCommand(),
+		rpc.ValidatorCommand(cdc),
 		rpc.BlockCommand(),
 		tx.SearchTxCmd(cdc),
 		tx.QueryTxCmd(cdc),
@@ -115,7 +115,7 @@ func txCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 		bankcmd.SendTxCmd(cdc),
 		client.LineBreak,
 		authcmd.GetSignCommand(cdc),
-		bankcmd.GetBroadcastCommand(cdc),
+		authcmd.GetBroadcastCommand(cdc),
 		client.LineBreak,
 		version.VersionCmd,
 	)

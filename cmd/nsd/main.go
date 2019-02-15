@@ -18,6 +18,7 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/crypto"
 
 	gaiaInit "github.com/cosmos/cosmos-sdk/cmd/gaia/init"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -50,7 +51,7 @@ func main() {
 	rootCmd.AddCommand(InitCmd(ctx, cdc))
 	rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc))
 	rootCmd.AddCommand(	version.VersionCmd,)
-	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
+	server.AddCommands(ctx, cdc, rootCmd, newApp, appExporter())
 
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "NS", DefaultNodeHome)
@@ -59,6 +60,16 @@ func main() {
 		// handle with #870
 		panic(err)
 	}
+}
+
+func appExporter() server.AppExporter {
+
+	return func(logger log.Logger, db dbm.DB, _ io.Writer, _ int64, _ bool, _ []string) (
+
+		json.RawMessage, []tmtypes.GenesisValidator, error) {
+		 		dapp := app.NewNameServiceApp(logger, db)
+	            return dapp.ExportAppStateAndValidators()
+		}
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
@@ -103,7 +114,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			_, valPubKeys, err := gaiaInit.InitializeNodeValidatorFiles(config)
-			_, _, validator, err := server.SimpleAppGenTx(cdc, valPubKeys)
+			_, _, validator, err := SimpleAppGenTx(cdc, valPubKeys)
 			if err != nil {
 				return err
 			}
@@ -125,7 +136,38 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 	return cmd
 }
+// SimpleAppGenTx returns a simple GenTx command that makes the node a valdiator from the start
+func SimpleAppGenTx(cdc *codec.Codec, pk crypto.PubKey) (
+	appGenTx, cliPrint json.RawMessage, validator tmtypes.GenesisValidator, err error) {
 
+	addr, secret, err := server.GenerateCoinKey()
+	if err != nil {
+		return
+	}
+
+	bz, err := cdc.MarshalJSON(struct {
+		Addr sdk.AccAddress `json:"addr"`
+	}{addr})
+	if err != nil {
+		return
+	}
+
+	appGenTx = json.RawMessage(bz)
+
+	bz, err = cdc.MarshalJSON(map[string]string{"secret": secret})
+	if err != nil {
+		return
+	}
+
+	cliPrint = json.RawMessage(bz)
+
+	validator = tmtypes.GenesisValidator{
+		PubKey: pk,
+		Power:  10,
+	}
+
+	return
+}
 // AddGenesisAccountCmd allows users to add accounts to the genesis file
 func AddGenesisAccountCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{

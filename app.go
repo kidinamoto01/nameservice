@@ -8,7 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/stake"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+
 	"github.com/cosmos/cosmos-sdk/x/params"
 
 	nameservice "github.com/kidinamoto01/nameservice/x/nservice"
@@ -44,7 +45,7 @@ type nameServiceApp struct {
 	feeCollectionKeeper auth.FeeCollectionKeeper
 	nsKeeper            nameservice.Keeper
 
-	paramsKeeper        params.Keeper
+	paramsKeeper     params.Keeper
 
 }
 
@@ -67,6 +68,8 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 		keyNSowners:      sdk.NewKVStoreKey("ns_owners"),
 		keyNSprices:      sdk.NewKVStoreKey("ns_prices"),
 		keyFeeCollection: sdk.NewKVStoreKey("fee_collection"),
+		keyParams:        sdk.NewKVStoreKey("params"),
+		tkeyParams:       sdk.NewTransientStoreKey("transient_params"),
 	}
 
 	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams)
@@ -75,12 +78,16 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
 		app.keyAccount,
+		app.paramsKeeper.Subspace(auth.DefaultParamspace),
 		auth.ProtoBaseAccount,
 	)
 
 	// The BankKeeper allows you perform sdk.Coins interactions
-	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper)
-
+	app.bankKeeper = bank.NewBaseKeeper(
+		app.accountKeeper,
+		app.paramsKeeper.Subspace(bank.DefaultParamspace),
+		bank.DefaultCodespace,
+	)
 	// The FeeCollectionKeeper collects transaction fees and renders them to the fee distribution module
 	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(cdc, app.keyFeeCollection)
 
@@ -129,6 +136,8 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 
 // GenesisState represents chain state at the start of the chain. Any initial state (account balances) are stored here.
 type GenesisState struct {
+	AuthData auth.GenesisState   `json:"auth"`
+	BankData bank.GenesisState   `json:"bank"`
 	Accounts []*auth.BaseAccount `json:"accounts"`
 }
 
@@ -145,6 +154,9 @@ func (app *nameServiceApp) initChainer(ctx sdk.Context, req abci.RequestInitChai
 		acc.AccountNumber = app.accountKeeper.GetNextAccountNumber(ctx)
 		app.accountKeeper.SetAccount(ctx, acc)
 	}
+
+	auth.InitGenesis(ctx, app.accountKeeper, app.feeCollectionKeeper, genesisState.AuthData)
+	bank.InitGenesis(ctx, app.bankKeeper, genesisState.BankData)
 
 	return abci.ResponseInitChain{}
 }
@@ -181,7 +193,7 @@ func MakeCodec() *codec.Codec {
 	auth.RegisterCodec(cdc)
 	bank.RegisterCodec(cdc)
 	nameservice.RegisterCodec(cdc)
-	stake.RegisterCodec(cdc)
+	staking.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	return cdc
