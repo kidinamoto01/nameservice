@@ -2,9 +2,7 @@ package app
 
 import (
 	"encoding/json"
-
 	"github.com/tendermint/tendermint/libs/log"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -18,6 +16,7 @@ import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	tmtypes "github.com/tendermint/tendermint/types"
+	"github.com/kidinamoto01/nameservice/config"
 )
 
 const (
@@ -91,12 +90,16 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 
 	// The NameserviceKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the namestore
+	metric := config.DefaultInstrumentationConfig()
+
+
 	app.nsKeeper = nameservice.NewKeeper(
 		app.bankKeeper,
 		app.keyNSnames,
 		app.keyNSowners,
 		app.keyNSprices,
 		app.cdc,
+		nameservice.PrometheusMetrics(metric),
 	)
 
 	// The AnteHandler handles signature verification and transaction pre-processing

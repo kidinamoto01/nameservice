@@ -7,5 +7,5 @@ import (
 
 func TestDefaultConfig(t *testing.T) {
 	cfg := DefaultInstrumentationConfig()
-	require.False(t, cfg.Prometheus)
+	require.True(t, cfg.Prometheus)
 }

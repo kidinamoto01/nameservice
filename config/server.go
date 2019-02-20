@@ -17,7 +17,7 @@ type Context struct {
 // reporting.
 func DefaultInstrumentationConfig() *cfg.InstrumentationConfig {
 	return &cfg.InstrumentationConfig{
-		Prometheus:           false,
+		Prometheus:           true,
 		PrometheusListenAddr: ":26660",
 		MaxOpenConnections:   3,
 		Namespace:            "tendermint",

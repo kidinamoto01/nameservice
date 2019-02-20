@@ -16,6 +16,8 @@ type Keeper struct {
 	pricesStoreKey sdk.StoreKey // Unexposed key to access prices store from sdk.Context
 
 	cdc *codec.Codec // The wire codec for binary encoding/decoding.
+	// metrics
+	metrics *Metrics
 }
 // SetName - sets the value string that a name resolves to
 func (k Keeper) SetName(ctx sdk.Context, name string, value string) {
@@ -47,6 +49,7 @@ func (k Keeper) GetOwner(ctx sdk.Context, name string) sdk.AccAddress {
 // SetOwner - sets the current owner of a name
 func (k Keeper) SetOwner(ctx sdk.Context, name string, owner sdk.AccAddress) {
 	store := ctx.KVStore(k.ownersStoreKey)
+	k.metrics.SumOfNameservice.Add(1)
 	store.Set([]byte(name), owner)
 }
 // GetPrice - gets the current price of a name.  If price doesn't exist yet, set to 1mycoin.
@@ -68,13 +71,14 @@ func (k Keeper) SetPrice(ctx sdk.Context, name string, price sdk.Coins) {
 }
 
 // NewKeeper creates new instances of the nservice Keeper
-func NewKeeper(coinKeeper bank.Keeper, namesStoreKey sdk.StoreKey, ownersStoreKey sdk.StoreKey, priceStoreKey sdk.StoreKey, cdc *codec.Codec) Keeper {
+func NewKeeper(coinKeeper bank.Keeper, namesStoreKey sdk.StoreKey, ownersStoreKey sdk.StoreKey, priceStoreKey sdk.StoreKey, cdc *codec.Codec,metrics *Metrics) Keeper {
 	return Keeper{
 		coinKeeper:     coinKeeper,
 		namesStoreKey:  namesStoreKey,
 		ownersStoreKey: ownersStoreKey,
 		pricesStoreKey: priceStoreKey,
 		cdc:            cdc,
+		metrics:    metrics,
 	}
 }
 
