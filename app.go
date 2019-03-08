@@ -92,7 +92,6 @@ func NewNameServiceApp(logger log.Logger, db dbm.DB) *nameServiceApp {
 	// It handles interactions with the namestore
 	metric := config.DefaultInstrumentationConfig()
 
-
 	app.nsKeeper = nameservice.NewKeeper(
 		app.bankKeeper,
 		app.keyNSnames,
